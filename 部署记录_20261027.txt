@@ -1,0 +1,63 @@
+========================================
+数字保险箱 V2.9 上线部署记录
+日期：2026-10-27
+作者：军哥懂保
+微信：xunijiayuan
+========================================
+
+【任务】
+上传数字保险箱到GitHub仓库，部署到 ecojia.cn 工具清单，页面要有下载链接。
+
+【完成情况】
+
+✅ 1. GitHub 仓库创建完成
+   仓库名：digital-vault
+   地址：https://github.com/lzp5133084/digital-vault
+   包含文件：
+   - index.html（星霓暖赛博风下载中心页面）
+   - vault.html（网页版原型）
+   - README.md（项目说明）
+   - .gitignore
+
+✅ 2. GitHub Pages 已构建完成
+   地址：https://lzp5133084.github.io/digital-vault/
+   状态：built ✅
+
+✅ 3. GitHub Release v2.9 已发布
+   地址：https://github.com/lzp5133084/digital-vault/releases/tag/v2.9
+   包含资产：
+   - digital-vault-win-v2.9.exe（约 39 MB，Windows电脑端）
+   - digital-vault-android-v2.9.apk（约 2 MB，Android手机端）
+
+✅ 4. ecosystem.json 已更新并推送到 ecojia 仓库
+   产品矩阵 01「数字保险箱」状态：规划中 → 已上线
+   工具清单新增 T34「我的数字保险箱」条目
+   包含：url / repo / pages_url / desc / steps / size_kb / status 等完整信息
+
+⚠️ 5. 服务器 SSH 外网通道不通
+   需要手动在服务器执行：
+   ssh ubuntu@118.24.173.246
+   cd /opt/ecojia/portal && git pull
+   sudo systemctl restart ecojia-portal
+
+【访问入口】
+
+数字保险箱下载中心：
+https://lzp5133084.github.io/digital-vault/
+
+网页版原型（在线体验）：
+https://lzp5133084.github.io/digital-vault/vault.html
+
+电脑端 EXE 直接下载：
+https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-win-v2.9.exe
+
+手机端 APK 直接下载：
+https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-android-v2.9.apk
+
+ecojia.cn 工具清单（需服务器更新后生效）：
+https://ecojia.cn/tools
+
+【本地工作目录】
+E:\repos\digital-vault\  （GitHub仓库本地副本）
+
+========================================
