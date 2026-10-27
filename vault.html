@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的数字保险箱 · OPC-AI Prototype</title>
+<style>
+:root{
+  --bg:#071019;--bg2:#0b1622;--card:#0f1d2b;--card2:#132437;--line:#20384d;
+  --text:#edf6ff;--muted:#8aa0b5;--cyan:#55d6be;--blue:#6ca8ff;--vio:#8a7dff;
+  --warn:#f7c35f;--danger:#ff6f88;--ok:#58d49b;--shadow:0 22px 60px rgba(0,0,0,.35);
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:
+ radial-gradient(circle at 10% 0%,rgba(85,214,190,.10),transparent 24%),
+ radial-gradient(circle at 90% 15%,rgba(108,168,255,.10),transparent 24%),
+ linear-gradient(180deg,#061019,#08131f 48%,#071019);color:var(--text)}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.small{font-size:12px}.muted{color:var(--muted)}
+.badge{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:5px 9px;font-size:11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.06)}
+.badge.ok{color:#a8f0cf;background:rgba(88,212,155,.08);border-color:rgba(88,212,155,.18)}
+.badge.warn{color:#ffe0a1;background:rgba(247,195,95,.08);border-color:rgba(247,195,95,.18)}
+.badge.danger{color:#ffadbc;background:rgba(255,111,136,.08);border-color:rgba(255,111,136,.18)}
+#lockScreen{min-height:100vh;display:grid;place-items:center;padding:24px}
+.lockCard{width:min(940px,96vw);display:grid;grid-template-columns:1.08fr .92fr;background:linear-gradient(180deg,rgba(17,32,47,.96),rgba(9,19,30,.97));border:1px solid rgba(135,190,230,.13);border-radius:30px;overflow:hidden;box-shadow:var(--shadow)}
+.hero{padding:48px;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:420px;height:420px;border-radius:50%;right:-240px;bottom:-250px;background:radial-gradient(circle,rgba(85,214,190,.18),transparent 60%)}
+.heroMark{width:62px;height:62px;border-radius:20px;display:grid;place-items:center;font-size:28px;background:linear-gradient(135deg,#173f4e,#1e315f);border:1px solid rgba(132,221,255,.18);box-shadow:0 12px 40px rgba(85,214,190,.12)}
+.hero h1{font-size:38px;line-height:1.15;margin:26px 0 14px}
+.hero p{max-width:520px;color:#a8bacb;line-height:1.8}
+.featureRow{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:28px}
+.feature{padding:14px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05)}
+.feature b{font-size:12px;display:block;margin-bottom:4px}.feature span{font-size:10px;color:var(--muted);line-height:1.5}
+.unlock{padding:38px;background:rgba(3,11,18,.28);border-left:1px solid rgba(255,255,255,.05)}
+.unlock h2{margin:4px 0 6px;font-size:20px}.unlock p{margin:0 0 22px;color:var(--muted);font-size:12px;line-height:1.6}
+.field{margin:12px 0}
+.field label{display:block;font-size:11px;color:#aebed0;margin-bottom:7px}
+.input,select,textarea{width:100%;border-radius:13px;border:1px solid #233c52;background:#081522;color:var(--text);padding:12px 13px;outline:none}
+.input:focus,select:focus,textarea:focus{border-color:#477fa8;box-shadow:0 0 0 3px rgba(108,168,255,.08)}
+.btn{border:0;border-radius:13px;padding:11px 14px;color:white;background:linear-gradient(135deg,#347d8d,#536ac7);box-shadow:0 10px 24px rgba(45,106,150,.18);font-weight:700}
+.btn.secondary{background:#17283a;color:#d7e5f2;box-shadow:none;border:1px solid #263e53}
+.btn.ghost{background:transparent;color:#c8d8e6;box-shadow:none;border:1px solid #294158}
+.btn.danger{background:linear-gradient(135deg,#a8445d,#7b3551)}
+.btn.ok{background:linear-gradient(135deg,#2f876d,#3c7297)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.full{width:100%}
+.btnRow{display:flex;gap:9px;flex-wrap:wrap}
+.notice{border-radius:13px;padding:11px 12px;background:rgba(247,195,95,.06);border:1px solid rgba(247,195,95,.14);color:#e3c985;font-size:11px;line-height:1.55;margin-top:14px}
+.demoBox{margin-top:18px;padding-top:17px;border-top:1px solid rgba(255,255,255,.07)}
+.demoBox b{font-size:12px}.demoBox p{font-size:10px;color:var(--muted);margin:5px 0 10px}
+.app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+.sidebar{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,#091522,#0a1826);border-right:1px solid rgba(255,255,255,.06);padding:16px;display:flex;flex-direction:column}
+.brand{display:flex;gap:10px;align-items:center;padding:6px 6px 18px}
+.brandIcon{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;background:linear-gradient(135deg,#204659,#293c75)}
+.brand b{font-size:14px}.brand span{display:block;font-size:9px;color:var(--muted);margin-top:2px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav button{width:100%;text-align:left;border:1px solid transparent;border-radius:12px;padding:10px 11px;background:transparent;color:#9fb2c4}
+.nav button.active{background:linear-gradient(90deg,rgba(85,214,190,.11),rgba(108,168,255,.07));border-color:rgba(85,214,190,.12);color:white}
+.nav button:hover{background:rgba(255,255,255,.035)}
+.nav small{float:right;color:#60758a}
+.sideFoot{margin-top:auto;padding:12px;border-radius:15px;background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.05)}
+.sideFoot b{font-size:11px}.sideFoot p{font-size:9px;line-height:1.5;color:var(--muted);margin:5px 0 8px}
+.main{min-width:0}
+.topbar{height:70px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.055);background:rgba(6,15,24,.6);backdrop-filter:blur(18px);position:sticky;top:0;z-index:10}
+.title b{display:block;font-size:15px}.title span{font-size:10px;color:var(--muted)}
+.topActions{display:flex;gap:8px;align-items:center}
+.content{padding:22px;max-width:1480px;margin:auto}
+.page{display:none}.page.active{display:block}
+.pageHeader{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:18px}
+.pageHeader h2{font-size:25px;margin:0 0 5px}.pageHeader p{margin:0;color:var(--muted);font-size:11px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card{background:linear-gradient(180deg,rgba(15,29,43,.94),rgba(11,23,35,.94));border:1px solid rgba(140,190,220,.09);border-radius:18px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.stat{padding:16px}.stat .icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#173146;margin-bottom:18px}
+.stat strong{font-size:26px;display:block}.stat span{font-size:10px;color:var(--muted)}
+.sectionTitle{display:flex;justify-content:space-between;align-items:center;margin:20px 0 9px}
+.sectionTitle h3{margin:0;font-size:13px}.sectionTitle span{font-size:10px;color:var(--muted)}
+.list{display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:12px;align-items:center;padding:11px 12px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04)}
+.row:hover{border-color:rgba(108,168,255,.14)}
+.rowIcon{width:36px;height:36px;border-radius:11px;display:grid;place-items:center;background:#172d43}
+.rowMain{flex:1;min-width:0}.rowMain b{font-size:12px}.rowMain p{margin:3px 0 0;color:var(--muted);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowActions{display:flex;gap:6px}
+.iconBtn{width:32px;height:32px;border-radius:10px;border:1px solid #274055;background:#122337;color:#bcd0e1}
+.table{width:100%;border-collapse:collapse}.table th{text-align:left;color:#71879a;font-size:9px;font-weight:600;padding:9px;border-bottom:1px solid #1e3447}.table td{font-size:11px;padding:11px 9px;border-bottom:1px solid rgba(255,255,255,.04)}
+.pill{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:9px;background:#162a3d;color:#b2c5d7}
+.empty{padding:34px;text-align:center;color:var(--muted);font-size:11px;border:1px dashed #263e52;border-radius:14px}
+.policyHero{display:grid;grid-template-columns:1.15fr .85fr;gap:14px}
+.switch{position:relative;width:44px;height:24px;background:#22384b;border-radius:999px;border:1px solid #2c4a62;display:inline-block;vertical-align:middle}
+.switch input{display:none}.switch span{position:absolute;width:18px;height:18px;border-radius:50%;left:3px;top:2px;background:#8ca1b3;transition:.2s}
+.switch input:checked+span{left:21px;background:#6fe0bd;box-shadow:0 0 18px rgba(111,224,189,.4)}
+.policyState{padding:16px;border-radius:16px;background:linear-gradient(135deg,rgba(85,214,190,.07),rgba(108,168,255,.05));border:1px solid rgba(85,214,190,.12)}
+.policyState strong{font-size:28px;display:block;margin:9px 0 3px}
+.progress{height:8px;background:#0a1724;border-radius:99px;overflow:hidden;margin:12px 0}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#4ecbad,#619aff)}
+.preview{white-space:pre-wrap;background:#07131f;border:1px solid #20394d;border-radius:14px;padding:14px;max-height:420px;overflow:auto;color:#c9d8e5;font-size:10px;line-height:1.7}
+.audit{display:flex;flex-direction:column;gap:8px}.auditItem{padding:10px 12px;border-left:2px solid #335c7c;background:rgba(255,255,255,.02);border-radius:0 10px 10px 0}.auditItem b{font-size:10px}.auditItem p{font-size:9px;color:var(--muted);margin:4px 0 0}
+.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(8px);z-index:50;display:grid;place-items:center;padding:18px}
+.modal{width:min(620px,95vw);max-height:90vh;overflow:auto;background:#0d1b29;border:1px solid #29435a;border-radius:20px;box-shadow:var(--shadow);padding:18px}
+.modalHead{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modalHead h3{margin:0;font-size:16px}
+.closeBtn{width:34px;height:34px;border-radius:10px;border:1px solid #2c465e;background:#122437;color:#c8d8e7}
+.formGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.formGrid .span2{grid-column:1/-1}
+.toast{position:fixed;right:22px;bottom:22px;z-index:80;min-width:240px;max-width:420px;padding:12px 14px;border-radius:13px;background:#14283a;border:1px solid #31526c;box-shadow:var(--shadow);font-size:11px;display:none}
+.warnline{padding:10px 12px;border-radius:12px;color:#f5d994;background:rgba(247,195,95,.06);border:1px solid rgba(247,195,95,.14);font-size:10px;line-height:1.6}
+.securityGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.secItem{padding:14px;border-radius:14px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05)}.secItem b{display:block;font-size:11px}.secItem p{font-size:9px;color:var(--muted);line-height:1.6;margin:5px 0 0}
+@media(max-width:1050px){.grid4{grid-template-columns:repeat(2,1fr)}.policyHero,.grid2{grid-template-columns:1fr}.securityGrid{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.app{grid-template-columns:1fr}.sidebar{display:none}.lockCard{grid-template-columns:1fr}.unlock{border-left:0;border-top:1px solid rgba(255,255,255,.05)}.hero{padding:30px}.hero h1{font-size:30px}.featureRow{grid-template-columns:1fr}.content{padding:14px}.grid4{grid-template-columns:1fr 1fr}.formGrid{grid-template-columns:1fr}.formGrid .span2{grid-column:auto}.topbar{padding:0 14px}.topActions .hideMobile{display:none}}
+</style>
+</head>
+<body>
+
+<section id="lockScreen">
+  <div class="lockCard">
+    <div class="hero">
+      <div class="heroMark">🔐</div>
+      <div class="badge ok" style="margin-top:22px">OPC-AI · LOCAL FIRST PROTOTYPE</div>
+      <h1>我的数字保险箱</h1>
+      <p>把密码、重要账号与家庭授权统一整理，并建立“长期未登录”应急交付机制。你负责保管与授权，系统负责计算规则、整理文本包与记录交付流程。</p>
+      <div class="featureRow">
+        <div class="feature"><b>🔑 密码管理</b><span>账号、密码、网址、备注统一保存。</span></div>
+        <div class="feature"><b>👨‍👩‍👧 家庭授权</b><span>设置关联人与允许接收的联系方式。</span></div>
+        <div class="feature"><b>⏱ 未登录触发</b><span>按天/月计算到期状态与应急交付。</span></div>
+      </div>
+    </div>
+    <div class="unlock">
+      <div id="setupPane">
+        <h2>创建本机保险箱</h2>
+        <p>首次使用请设置主密码。数据只保存在当前浏览器的本地存储中。</p>
+        <div class="field"><label>主密码</label><input class="input" id="setupPass" type="password" placeholder="至少 6 位"></div>
+        <div class="field"><label>再次输入</label><input class="input" id="setupPass2" type="password" placeholder="确认主密码"></div>
+        <button class="btn full" id="createVaultBtn">创建并进入保险箱</button>
+        <div class="demoBox">
+          <b>只想先体验？</b>
+          <p>一键创建演示数据并直接进入。演示内容均为虚构信息。</p>
+          <button class="btn secondary full" id="demoBtn">一键进入演示模式</button>
+        </div>
+      </div>
+      <div id="unlockPane" class="hidden">
+        <h2>解锁保险箱</h2>
+        <p id="lastLoginText">请输入主密码继续。</p>
+        <div class="field"><label>主密码</label><input class="input" id="unlockPass" type="password" placeholder="输入主密码"></div>
+        <button class="btn full" id="unlockBtn">解锁</button>
+        <div class="notice">如果“长期未登录规则”已经到期，本次成功解锁后系统会立即生成应急文本包并进入模拟发送流程。</div>
+      </div>
+      <div class="notice">⚠ 这是本地可运行原型，不建议录入真实敏感密码。正式发布版需要进一步做安全审计、密钥恢复、安装包级安全与真实消息发送服务。</div>
+    </div>
+  </div>
+</section>
+
+<div id="app" class="app hidden">
+  <aside class="sidebar">
+    <div class="brand"><div class="brandIcon">🔐</div><div><b>我的数字保险箱</b><span>OPC-AI Build · Prototype</span></div></div>
+    <div class="nav" id="nav">
+      <button data-page="dashboard" class="active">◈ 总览 <small>HOME</small></button>
+      <button data-page="passwords">⌁ 密码管理 <small>VAULT</small></button>
+      <button data-page="family">◎ 家庭授权 <small>FAMILY</small></button>
+      <button data-page="policy">◷ 未登录触发 <small>RULE</small></button>
+      <button data-page="dispatch">⇢ 应急交付 <small>SEND</small></button>
+      <button data-page="security">◇ 安全与记录 <small>LOG</small></button>
+    </div>
+    <div class="sideFoot">
+      <b>当前运行方式</b>
+      <p>单文件 HTML · LocalStorage 本机保存 · Web Crypto 加密（浏览器支持时）</p>
+      <span class="badge warn" id="cryptoBadge">检测中</span>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="title"><b id="topTitle">保险箱总览</b><span id="topSub">掌握当前安全状态与应急规则</span></div>
+      <div class="topActions">
+        <span class="badge ok hideMobile" id="policyBadge">● 规则正常</span>
+        <button class="btn ghost" id="exportBtn">导出文本</button>
+        <button class="btn secondary" id="lockBtn">锁定</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="page active" id="page-dashboard">
+        <div class="pageHeader"><div><h2>早上好，保险箱已解锁</h2><p>你只需要维护内容、授权关联人，并确认应急触发策略。</p></div><span class="badge ok">LOCAL ONLY</span></div>
+        <div class="grid4">
+          <div class="card stat"><div class="icon">🔑</div><strong id="statPasswords">0</strong><span>密码记录</span></div>
+          <div class="card stat"><div class="icon">👥</div><strong id="statFamily">0</strong><span>家庭关联人</span></div>
+          <div class="card stat"><div class="icon">⏳</div><strong id="statDays">—</strong><span>距离触发</span></div>
+          <div class="card stat"><div class="icon">⇢</div><strong id="statDispatch">0</strong><span>应急交付记录</span></div>
+        </div>
+        <div class="grid2">
+          <div>
+            <div class="sectionTitle"><h3>最近密码记录</h3><span>最多显示 5 条</span></div>
+            <div class="card"><div id="recentPasswords" class="list"></div></div>
+          </div>
+          <div>
+            <div class="sectionTitle"><h3>应急规则状态</h3><span>自动计算</span></div>
+            <div class="card" id="dashPolicy"></div>
+          </div>
+        </div>
+        <div class="sectionTitle"><h3>最近安全事件</h3><span>本机审计记录</span></div>
+        <div class="card"><div class="audit" id="dashAudit"></div></div>
+      </section>
+
+      <section class="page" id="page-passwords">
+        <div class="pageHeader"><div><h2>密码管理</h2><p>集中维护网站、APP、银行卡或其他数字账号。</p></div><button class="btn" id="addPasswordBtn">＋ 新增密码</button></div>
+        <div class="card">
+          <table class="table">
+            <thead><tr><th>名称</th><th>账号</th><th>密码</th><th>分类</th><th>更新时间</th><th>操作</th></tr></thead>
+            <tbody id="passwordTable"></tbody>
+          </table>
+          <div class="empty hidden" id="passwordEmpty">还没有密码记录。</div>
+        </div>
+      </section>
+
+      <section class="page" id="page-family">
+        <div class="pageHeader"><div><h2>家庭授权</h2><p>设置应急情况下允许接收保险箱文本包的关联人。</p></div><button class="btn" id="addFamilyBtn">＋ 添加关联人</button></div>
+        <div class="warnline">关联人只有在“未登录触发规则”中被选中后才会成为接收人。本原型不会真实发送短信或邮件。</div>
+        <div class="sectionTitle"><h3>已关联成员</h3><span id="familyCountLabel">0 人</span></div>
+        <div class="grid2" id="familyGrid"></div>
+      </section>
+
+      <section class="page" id="page-policy">
+        <div class="pageHeader"><div><h2>长期未登录触发</h2><p>当本机连续未成功登录达到设定期限后，准备应急文本并交付给指定关联人。</p></div><span class="badge warn">BROWSER LIMITATION AWARE</span></div>
+        <div class="policyHero">
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center"><div><b style="font-size:13px">启用应急触发规则</b><p class="muted small" style="margin:5px 0 0">关闭后不会计算或准备任何交付。</p></div><label class="switch"><input id="policyEnabled" type="checkbox"><span></span></label></div>
+            <div class="formGrid" style="margin-top:15px">
+              <div class="field"><label>未登录时长</label><input class="input" id="policyValue" type="number" min="1" value="30"></div>
+              <div class="field"><label>单位</label><select id="policyUnit"><option value="days">天</option><option value="months">月</option></select></div>
+              <div class="field span2"><label>指定接收人</label><select id="policyRecipient"></select></div>
+              <div class="field span2"><label>交付方式</label><select id="policyMethod"><option value="text">生成完整文本包（演示）</option><option value="email">邮件接口（预留）</option><option value="sms">短信接口（预留）</option><option value="localAgent">本地代理服务（预留）</option></select></div>
+            </div>
+            <div class="btnRow"><button class="btn" id="savePolicyBtn">保存规则</button><button class="btn secondary" id="testTriggerBtn">立即测试触发</button></div>
+          </div>
+          <div class="policyState">
+            <span class="badge ok" id="policyStateBadge">● 规则未启用</span>
+            <strong id="policyCountdown">—</strong>
+            <span class="muted small">距离自动触发</span>
+            <div class="progress"><i id="policyProgress"></i></div>
+            <p class="muted small" id="policyDescription">启用后，这里会显示根据最后登录时间计算出的触发状态。</p>
+          </div>
+        </div>
+        <div class="sectionTitle"><h3>重要说明</h3><span>正式版实现建议</span></div>
+        <div class="card securityGrid">
+          <div class="secItem"><b>① 浏览器关闭后无法常驻</b><p>单文件 HTML 不能在电脑关机或网页关闭后持续计时并主动发送。</p></div>
+          <div class="secItem"><b>② 自动发送需要发送服务</b><p>正式版可接邮件 API、短信 API，或安装本地守护进程定期检查。</p></div>
+          <div class="secItem"><b>③ 敏感内容需要安全解密</b><p>正式版不能把明文密码放在服务器；需要设计授权解密、密钥托管或家属恢复机制。</p></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-dispatch">
+        <div class="pageHeader"><div><h2>应急交付中心</h2><p>预览、复制、下载或模拟发送完整保险箱文本包。</p></div><div class="btnRow"><button class="btn secondary" id="refreshPreviewBtn">刷新预览</button><button class="btn" id="simulateSendBtn">模拟发送</button></div></div>
+        <div class="grid2">
+          <div class="card">
+            <div class="sectionTitle" style="margin-top:0"><h3>交付文本预览</h3><span>实时生成</span></div>
+            <div class="preview mono" id="dispatchPreview"></div>
+            <div class="btnRow" style="margin-top:10px"><button class="btn secondary" id="copyPreviewBtn">复制文本</button><button class="btn secondary" id="downloadPreviewBtn">下载 TXT</button></div>
+          </div>
+          <div>
+            <div class="card">
+              <b style="font-size:13px">当前接收设置</b>
+              <div id="dispatchTarget" style="margin-top:12px"></div>
+            </div>
+            <div class="sectionTitle"><h3>历史交付记录</h3><span>模拟/测试</span></div>
+            <div class="card"><div id="dispatchHistory" class="audit"></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-security">
+        <div class="pageHeader"><div><h2>安全与记录</h2><p>查看本地保护能力、审计记录和原型限制。</p></div><span class="badge warn">PROTOTYPE</span></div>
+        <div class="card securityGrid">
+          <div class="secItem"><b>🔒 主密码</b><p>主密码不直接保存；支持 Web Crypto 时使用 PBKDF2 派生密钥并以 AES-GCM 加密保险箱内容。</p></div>
+          <div class="secItem"><b>💾 本地存储</b><p>所有数据保存在当前浏览器 LocalStorage。清理浏览器数据会删除保险箱。</p></div>
+          <div class="secItem"><b>⚠ 正式使用</b><p>本原型用于验证产品流程，不应作为真实密码管理器投入生产。</p></div>
+        </div>
+        <div class="sectionTitle"><h3>审计日志</h3><span>最近 50 条</span></div>
+        <div class="card"><div class="audit" id="fullAudit"></div></div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<div class="modalBack hidden" id="passwordModal">
+  <div class="modal">
+    <div class="modalHead"><h3 id="passwordModalTitle">新增密码</h3><button class="closeBtn" data-close="passwordModal">×</button></div>
+    <input type="hidden" id="passwordId">
+    <div class="formGrid">
+      <div class="field"><label>名称</label><input class="input" id="pwName" placeholder="例如：微信"></div>
+      <div class="field"><label>分类</label><select id="pwCategory"><option>社交</option><option>金融</option><option>工作</option><option>生活</option><option>其他</option></select></div>
+      <div class="field span2"><label>账号 / 用户名</label><input class="input" id="pwAccount" placeholder="手机号、邮箱或用户名"></div>
+      <div class="field span2"><label>密码</label><input class="input" id="pwPassword" type="text" placeholder="密码"></div>
+      <div class="field span2"><label>网址 / 应用</label><input class="input" id="pwUrl" placeholder="https://... 或 APP 名称"></div>
+      <div class="field span2"><label>备注</label><textarea id="pwNote" rows="3" placeholder="补充说明"></textarea></div>
+    </div>
+    <button class="btn full" id="savePasswordBtn">保存密码记录</button>
+  </div>
+</div>
+
+<div class="modalBack hidden" id="familyModal">
+  <div class="modal">
+    <div class="modalHead"><h3 id="familyModalTitle">添加家庭关联人</h3><button class="closeBtn" data-close="familyModal">×</button></div>
+    <input type="hidden" id="familyId">
+    <div class="formGrid">
+      <div class="field"><label>姓名</label><input class="input" id="famName" placeholder="例如：妈妈"></div>
+      <div class="field"><label>关系</label><select id="famRelation"><option>父亲</option><option>母亲</option><option>配偶</option><option>子女</option><option>兄弟姐妹</option><option>其他</option></select></div>
+      <div class="field"><label>联系方式类型</label><select id="famType"><option value="email">邮箱</option><option value="phone">手机号</option><option value="other">其他</option></select></div>
+      <div class="field"><label>联系方式</label><input class="input" id="famContact" placeholder="邮箱或手机号"></div>
+      <div class="field span2"><label>授权备注</label><textarea id="famNote" rows="3" placeholder="例如：仅在触发长期未登录规则后接收完整文本"></textarea></div>
+    </div>
+    <button class="btn full" id="saveFamilyBtn">保存关联人</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const META_KEY='opc_vault_meta_v1', DATA_KEY='opc_vault_data_v1';
+let vault=null, masterKey=null, cryptoMode='unknown';
+
+const $=id=>document.getElementById(id);
+const nowISO=()=>new Date().toISOString();
+const uid=()=>Math.random().toString(36).slice(2)+Date.now().toString(36);
+const fmt=d=>new Date(d).toLocaleString('zh-CN',{hour12:false});
+const esc=s=>String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+function toast(msg){
+  const t=$('toast');t.textContent=msg;t.style.display='block';
+  clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.style.display='none',2600);
+}
+function audit(type,text){
+  vault.audit.unshift({id:uid(),type,text,at:nowISO()});
+  vault.audit=vault.audit.slice(0,50);
+}
+function getMeta(){try{return JSON.parse(localStorage.getItem(META_KEY)||'null')}catch{return null}}
+function setMeta(v){localStorage.setItem(META_KEY,JSON.stringify(v))}
+function b64(bytes){return btoa(String.fromCharCode(...new Uint8Array(bytes)))}
+function unb64(s){return Uint8Array.from(atob(s),c=>c.charCodeAt(0))}
+function canCrypto(){return !!(window.crypto&&window.crypto.subtle)}
+
+async function deriveKey(password,salt){
+  const enc=new TextEncoder();
+  const base=await crypto.subtle.importKey('raw',enc.encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt,iterations:210000,hash:'SHA-256'},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+async function encryptData(data,password,saltB64){
+  if(!canCrypto()) return {mode:'plain',payload:btoa(unescape(encodeURIComponent(JSON.stringify(data))))};
+  const salt=saltB64?unb64(saltB64):crypto.getRandomValues(new Uint8Array(16));
+  const key=await deriveKey(password,salt);
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const buf=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(data)));
+  masterKey=key;
+  return {mode:'aes-gcm',salt:b64(salt),iv:b64(iv),payload:b64(buf)};
+}
+async function decryptData(record,password){
+  if(record.mode==='plain'){
+    cryptoMode='plain';
+    return JSON.parse(decodeURIComponent(escape(atob(record.payload))));
+  }
+  const salt=unb64(record.salt), iv=unb64(record.iv);
+  const key=await deriveKey(password,salt);
+  const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,unb64(record.payload));
+  masterKey=key;cryptoMode='aes-gcm';
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+async function saveVault(passwordOverride=null){
+  const meta=getMeta();
+  if(passwordOverride){
+    const rec=await encryptData(vault,passwordOverride,meta?.salt);
+    localStorage.setItem(DATA_KEY,JSON.stringify(rec));
+    if(rec.salt)setMeta({...meta,salt:rec.salt});
+    cryptoMode=rec.mode;
+  }else if(masterKey && cryptoMode==='aes-gcm'){
+    const old=JSON.parse(localStorage.getItem(DATA_KEY));
+    const iv=crypto.getRandomValues(new Uint8Array(12));
+    const buf=await crypto.subtle.encrypt({name:'AES-GCM',iv},masterKey,new TextEncoder().encode(JSON.stringify(vault)));
+    localStorage.setItem(DATA_KEY,JSON.stringify({...old,iv:b64(iv),payload:b64(buf)}));
+  }else{
+    localStorage.setItem(DATA_KEY,JSON.stringify({mode:'plain',payload:btoa(unescape(encodeURIComponent(JSON.stringify(vault))))}));
+  }
+}
+
+function freshVault(){
+  return {
+    version:1,
+    passwords:[],
+    family:[],
+    policy:{enabled:false,value:30,unit:'days',recipientId:'',method:'text'},
+    dispatches:[],
+    audit:[]
+  }
+}
+function demoVault(){
+  return {
+    version:1,
+    passwords:[
+      {id:uid(),name:'微信',account:'138****8888',password:'Demo-WeChat-2026',category:'社交',url:'微信 APP',note:'演示数据，请勿当作真实密码',updatedAt:nowISO()},
+      {id:uid(),name:'网上银行',account:'demo_user',password:'Bank-Demo-#9527',category:'金融',url:'银行 APP',note:'演示数据',updatedAt:nowISO()},
+      {id:uid(),name:'工作邮箱',account:'demo@example.com',password:'Mail-Demo-2026!',category:'工作',url:'mail.example.com',note:'演示数据',updatedAt:nowISO()}
+    ],
+    family:[
+      {id:'fam_demo_1',name:'妈妈',relation:'母亲',type:'phone',contact:'138****0001',note:'演示关联人'},
+      {id:'fam_demo_2',name:'哥哥',relation:'兄弟姐妹',type:'email',contact:'brother@example.com',note:'演示关联人'}
+    ],
+    policy:{enabled:true,value:30,unit:'days',recipientId:'fam_demo_1',method:'text'},
+    dispatches:[],
+    audit:[{id:uid(),type:'demo',text:'已创建演示保险箱。',at:nowISO()}]
+  }
+}
+
+async function initialize(){
+  const meta=getMeta();
+  cryptoMode=canCrypto()?'aes-gcm':'plain';
+  $('cryptoBadge').textContent=canCrypto()?'● Web Crypto 可用':'● 降级演示模式';
+  $('cryptoBadge').className='badge '+(canCrypto()?'ok':'danger');
+  if(meta && localStorage.getItem(DATA_KEY)){
+    $('setupPane').classList.add('hidden');$('unlockPane').classList.remove('hidden');
+    $('lastLoginText').textContent=meta.lastLoginAt?'上次成功登录：'+fmt(meta.lastLoginAt):'请输入主密码继续。';
+  }
+}
+async function createVault(password,data=freshVault()){
+  if(password.length<6){toast('主密码至少 6 位');return false}
+  vault=data;audit('security','创建本机保险箱。');
+  const meta={createdAt:nowISO(),lastLoginAt:nowISO(),salt:null};
+  setMeta(meta);
+  await saveVault(password);
+  await enterApp();
+  return true;
+}
+async function enterApp(){
+  const meta=getMeta();
+  const previousLast=meta?.lastLoginAt;
+  setMeta({...meta,lastLoginAt:nowISO()});
+  $('lockScreen').classList.add('hidden');$('app').classList.remove('hidden');
+  audit('login','成功解锁保险箱。');
+  await maybeTriggerFromInactivity(previousLast);
+  await saveVault();
+  renderAll();
+}
+async function maybeTriggerFromInactivity(previousLast){
+  if(!vault.policy.enabled||!previousLast)return;
+  const due=calcDue(previousLast,vault.policy.value,vault.policy.unit);
+  if(Date.now()>=due.getTime()){
+    await createDispatch('auto','检测到长期未登录规则已到期，本次打开时执行模拟应急交付。');
+  }
+}
+
+function calcDue(last,value,unit){
+  const d=new Date(last);
+  if(unit==='months')d.setMonth(d.getMonth()+Number(value||1));
+  else d.setDate(d.getDate()+Number(value||1));
+  return d;
+}
+function policyStatus(){
+  const meta=getMeta();
+  if(!vault.policy.enabled)return {enabled:false,text:'未启用',days:null,pct:0,due:null};
+  const last=new Date(meta.lastLoginAt||Date.now()), due=calcDue(last,vault.policy.value,vault.policy.unit);
+  const total=due-last, elapsed=Date.now()-last;
+  const left=due-Date.now();
+  return {enabled:true,text:left<=0?'已到期':Math.ceil(left/86400000)+' 天',days:Math.ceil(left/86400000),pct:Math.max(0,Math.min(100,elapsed/total*100)),due};
+}
+function selectedFamily(){
+  return vault.family.find(x=>x.id===vault.policy.recipientId)||null;
+}
+function buildExportText(){
+  const meta=getMeta(), fam=selectedFamily();
+  let out=[];
+  out.push('我的数字保险箱 · 应急文本包');
+  out.push('生成时间：'+fmt(nowISO()));
+  out.push('保险箱版本：Prototype v1');
+  out.push('');
+  out.push('【应急接收人】');
+  out.push(fam?`${fam.name}（${fam.relation}） / ${fam.type} / ${fam.contact}`:'尚未指定');
+  out.push('');
+  out.push('【密码与账号】');
+  if(!vault.passwords.length)out.push('暂无记录');
+  vault.passwords.forEach((p,i)=>{
+    out.push(`${i+1}. ${p.name}`);
+    out.push(`   分类：${p.category||'—'}`);
+    out.push(`   账号：${p.account||'—'}`);
+    out.push(`   密码：${p.password||'—'}`);
+    out.push(`   地址/应用：${p.url||'—'}`);
+    out.push(`   备注：${p.note||'—'}`);
+    out.push('');
+  });
+  out.push('【家庭关联人】');
+  if(!vault.family.length)out.push('暂无关联人');
+  vault.family.forEach((f,i)=>out.push(`${i+1}. ${f.name} / ${f.relation} / ${f.type} / ${f.contact} / ${f.note||''}`));
+  out.push('');
+  out.push('【长期未登录规则】');
+  out.push(vault.policy.enabled?`已启用：连续 ${vault.policy.value} ${vault.policy.unit==='days'?'天':'月'} 未登录后触发；接收人：${fam?fam.name:'未设置'}；方式：${vault.policy.method}`:'未启用');
+  out.push('');
+  out.push('【重要说明】');
+  out.push('此文本由本地 HTML 原型生成。原型中的“自动发送”属于模拟流程，正式版需接入邮件/短信/本地代理服务。');
+  return out.join('\n');
+}
+async function createDispatch(kind,note){
+  const fam=selectedFamily();
+  const rec={id:uid(),at:nowISO(),kind,target:fam?`${fam.name} / ${fam.contact}`:'未指定接收人',method:vault.policy.method,status:'SIMULATED',note};
+  vault.dispatches.unshift(rec);
+  audit('dispatch',`${kind==='auto'?'自动':'测试'}触发：${rec.target}，状态 ${rec.status}。`);
+  await saveVault();
+  renderAll();
+  toast('已生成应急文本包，并完成模拟发送');
+}
+
+function renderAll(){
+  renderDashboard();renderPasswords();renderFamily();renderPolicy();renderDispatch();renderAudit();
+}
+function renderDashboard(){
+  $('statPasswords').textContent=vault.passwords.length;
+  $('statFamily').textContent=vault.family.length;
+  $('statDispatch').textContent=vault.dispatches.length;
+  const ps=policyStatus();
+  $('statDays').textContent=!ps.enabled?'—':ps.days<=0?'到期':ps.days+'天';
+  const rp=$('recentPasswords');rp.innerHTML='';
+  if(!vault.passwords.length)rp.innerHTML='<div class="empty">暂无密码记录</div>';
+  vault.passwords.slice(0,5).forEach(p=>{
+    const el=document.createElement('div');el.className='row';
+    el.innerHTML=`<div class="rowIcon">🔑</div><div class="rowMain"><b>${esc(p.name)}</b><p>${esc(p.account)} · ${esc(p.category)}</p></div><span class="pill">${esc(p.url||'—')}</span>`;
+    rp.appendChild(el);
+  });
+  const fam=selectedFamily();
+  $('dashPolicy').innerHTML=`<div class="policyState"><span class="badge ${ps.enabled?'ok':'warn'}">${ps.enabled?'● 已启用':'● 未启用'}</span>
+  <strong>${ps.enabled?esc(ps.text):'—'}</strong><span class="muted small">距离触发</span>
+  <div class="progress"><i style="width:${ps.pct}%"></i></div>
+  <p class="muted small">${ps.enabled?`接收人：${fam?esc(fam.name):'未设置'}<br>预计触发：${ps.due?fmt(ps.due):'—'}`:'请在“未登录触发”页面配置规则。'}</p></div>`;
+  $('policyBadge').textContent=ps.enabled?'● 规则已启用':'● 规则未启用';
+  renderAuditInto('dashAudit',vault.audit.slice(0,5));
+}
+function renderPasswords(){
+  const tb=$('passwordTable');tb.innerHTML='';
+  $('passwordEmpty').classList.toggle('hidden',vault.passwords.length>0);
+  vault.passwords.forEach(p=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><b>${esc(p.name)}</b></td><td>${esc(p.account)}</td><td class="mono">••••••••</td><td><span class="pill">${esc(p.category)}</span></td><td>${fmt(p.updatedAt)}</td>
+      <td><div class="rowActions"><button class="iconBtn" data-viewpw="${p.id}" title="显示">👁</button><button class="iconBtn" data-editpw="${p.id}">✎</button><button class="iconBtn" data-delpw="${p.id}">×</button></div></td>`;
+    tb.appendChild(tr);
+  });
+}
+function renderFamily(){
+  const g=$('familyGrid');g.innerHTML='';$('familyCountLabel').textContent=vault.family.length+' 人';
+  if(!vault.family.length){g.innerHTML='<div class="empty" style="grid-column:1/-1">还没有家庭关联人。</div>';return}
+  vault.family.forEach(f=>{
+    const selected=vault.policy.recipientId===f.id;
+    const c=document.createElement('div');c.className='card';
+    c.innerHTML=`<div style="display:flex;gap:12px;align-items:center"><div class="rowIcon">👤</div><div style="flex:1"><b>${esc(f.name)}</b><div class="muted small">${esc(f.relation)} · ${esc(f.type)}</div></div>${selected?'<span class="badge ok">当前接收人</span>':''}</div>
+      <div class="row" style="margin-top:12px"><div class="rowMain"><b>${esc(f.contact)}</b><p>${esc(f.note||'无备注')}</p></div></div>
+      <div class="btnRow" style="margin-top:10px"><button class="btn secondary" data-editfam="${f.id}">编辑</button><button class="btn ghost" data-delfam="${f.id}">删除</button></div>`;
+    g.appendChild(c);
+  })
+}
+function renderPolicy(){
+  $('policyEnabled').checked=!!vault.policy.enabled;
+  $('policyValue').value=vault.policy.value||30;
+  $('policyUnit').value=vault.policy.unit||'days';
+  $('policyMethod').value=vault.policy.method||'text';
+  const sel=$('policyRecipient');sel.innerHTML='<option value="">请选择家庭成员</option>'+vault.family.map(f=>`<option value="${f.id}">${esc(f.name)} · ${esc(f.relation)} · ${esc(f.contact)}</option>`).join('');
+  sel.value=vault.policy.recipientId||'';
+  const ps=policyStatus();
+  $('policyStateBadge').className='badge '+(ps.enabled?'ok':'warn');
+  $('policyStateBadge').textContent=ps.enabled?'● 规则运行中':'● 规则未启用';
+  $('policyCountdown').textContent=ps.enabled?ps.text:'—';
+  $('policyProgress').style.width=ps.pct+'%';
+  $('policyDescription').innerHTML=ps.enabled?`预计触发时间：${ps.due?fmt(ps.due):'—'}<br>注意：网页关闭期间不会主动后台发送。`:'启用后，这里会显示根据最后登录时间计算出的触发状态。';
+}
+function renderDispatch(){
+  $('dispatchPreview').textContent=buildExportText();
+  const fam=selectedFamily();
+  $('dispatchTarget').innerHTML=fam?`<div class="row"><div class="rowIcon">👤</div><div class="rowMain"><b>${esc(fam.name)} · ${esc(fam.relation)}</b><p>${esc(fam.type)} / ${esc(fam.contact)}</p></div></div><div class="warnline" style="margin-top:10px">当前方式：${esc(vault.policy.method)}。本原型只执行模拟发送，不会向外部真实传输敏感信息。</div>`:'<div class="empty">尚未选择应急接收人。</div>';
+  renderAuditInto('dispatchHistory',vault.dispatches.slice(0,12).map(x=>({at:x.at,type:'dispatch',text:`${x.kind} / ${x.target} / ${x.status} / ${x.note}`})));
+}
+function renderAudit(){
+  renderAuditInto('fullAudit',vault.audit);
+}
+function renderAuditInto(id,arr){
+  const el=$(id);el.innerHTML='';
+  if(!arr.length){el.innerHTML='<div class="empty">暂无记录</div>';return}
+  arr.forEach(x=>{
+    const d=document.createElement('div');d.className='auditItem';
+    d.innerHTML=`<b>${esc(x.type||'event')} · ${fmt(x.at)}</b><p>${esc(x.text)}</p>`;
+    el.appendChild(d);
+  })
+}
+
+function openPassword(p=null){
+  $('passwordModalTitle').textContent=p?'编辑密码':'新增密码';
+  $('passwordId').value=p?.id||'';$('pwName').value=p?.name||'';$('pwAccount').value=p?.account||'';
+  $('pwPassword').value=p?.password||'';$('pwCategory').value=p?.category||'社交';$('pwUrl').value=p?.url||'';$('pwNote').value=p?.note||'';
+  $('passwordModal').classList.remove('hidden');
+}
+function openFamily(f=null){
+  $('familyModalTitle').textContent=f?'编辑关联人':'添加家庭关联人';
+  $('familyId').value=f?.id||'';$('famName').value=f?.name||'';$('famRelation').value=f?.relation||'父亲';
+  $('famType').value=f?.type||'email';$('famContact').value=f?.contact||'';$('famNote').value=f?.note||'';
+  $('familyModal').classList.remove('hidden');
+}
+function downloadText(name,text){
+  const blob=new Blob([text],{type:'text/plain;charset=utf-8'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;a.click();URL.revokeObjectURL(a.href);
+}
+function gotoPage(name){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  $('page-'+name).classList.add('active');document.querySelector(`.nav button[data-page="${name}"]`)?.classList.add('active');
+  const titles={dashboard:['保险箱总览','掌握当前安全状态与应急规则'],passwords:['密码管理','维护所有数字账号与重要凭据'],family:['家庭授权','管理应急关联人与接收对象'],policy:['长期未登录触发','配置自动交付规则'],dispatch:['应急交付中心','预览与模拟发送完整文本包'],security:['安全与记录','本地保护能力与审计日志']};
+  $('topTitle').textContent=titles[name][0];$('topSub').textContent=titles[name][1];
+}
+
+$('createVaultBtn').onclick=async()=>{const p=$('setupPass').value,p2=$('setupPass2').value;if(p!==p2)return toast('两次主密码不一致');await createVault(p)};
+$('demoBtn').onclick=async()=>{await createVault('123456',demoVault());toast('演示模式已进入；演示主密码为 123456')};
+$('unlockBtn').onclick=async()=>{
+  try{
+    const rec=JSON.parse(localStorage.getItem(DATA_KEY));vault=await decryptData(rec,$('unlockPass').value);
+    await enterApp();
+  }catch(e){toast('主密码错误，或保险箱数据无法解密')}
+};
+$('lockBtn').onclick=()=>{vault=null;masterKey=null;$('app').classList.add('hidden');$('lockScreen').classList.remove('hidden');$('setupPane').classList.add('hidden');$('unlockPane').classList.remove('hidden');$('unlockPass').value=''};
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>gotoPage(b.dataset.page));
+$('addPasswordBtn').onclick=()=>openPassword();
+$('addFamilyBtn').onclick=()=>openFamily();
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=$(b.dataset.close).classList.add('hidden'));
+
+$('savePasswordBtn').onclick=async()=>{
+  const name=$('pwName').value.trim();if(!name)return toast('请输入名称');
+  const id=$('passwordId').value;const obj={id:id||uid(),name,account:$('pwAccount').value.trim(),password:$('pwPassword').value,category:$('pwCategory').value,url:$('pwUrl').value.trim(),note:$('pwNote').value.trim(),updatedAt:nowISO()};
+  if(id){const i=vault.passwords.findIndex(x=>x.id===id);vault.passwords[i]=obj;audit('password','更新密码记录：'+name)}
+  else{vault.passwords.unshift(obj);audit('password','新增密码记录：'+name)}
+  await saveVault();$('passwordModal').classList.add('hidden');renderAll();toast('密码记录已保存')
+};
+$('saveFamilyBtn').onclick=async()=>{
+  const name=$('famName').value.trim(),contact=$('famContact').value.trim();if(!name||!contact)return toast('请填写姓名和联系方式');
+  const id=$('familyId').value;const obj={id:id||uid(),name,relation:$('famRelation').value,type:$('famType').value,contact,note:$('famNote').value.trim()};
+  if(id){const i=vault.family.findIndex(x=>x.id===id);vault.family[i]=obj;audit('family','更新家庭关联人：'+name)}
+  else{vault.family.push(obj);audit('family','新增家庭关联人：'+name)}
+  await saveVault();$('familyModal').classList.add('hidden');renderAll();toast('家庭关联人已保存')
+};
+$('passwordTable').onclick=async e=>{
+  const id=e.target.dataset.viewpw||e.target.dataset.editpw||e.target.dataset.delpw;if(!id)return;
+  const p=vault.passwords.find(x=>x.id===id);if(!p)return;
+  if(e.target.dataset.viewpw){alert(`${p.name}\n账号：${p.account}\n密码：${p.password}\n地址：${p.url||'—'}\n备注：${p.note||'—'}`);audit('security','查看了密码记录：'+p.name);await saveVault();renderAudit()}
+  if(e.target.dataset.editpw)openPassword(p);
+  if(e.target.dataset.delpw && confirm('确定删除“'+p.name+'”吗？')){vault.passwords=vault.passwords.filter(x=>x.id!==id);audit('password','删除密码记录：'+p.name);await saveVault();renderAll()}
+};
+$('familyGrid').onclick=async e=>{
+  const id=e.target.dataset.editfam||e.target.dataset.delfam;if(!id)return;const f=vault.family.find(x=>x.id===id);if(!f)return;
+  if(e.target.dataset.editfam)openFamily(f);
+  if(e.target.dataset.delfam && confirm('确定删除“'+f.name+'”吗？')){vault.family=vault.family.filter(x=>x.id!==id);if(vault.policy.recipientId===id)vault.policy.recipientId='';audit('family','删除家庭关联人：'+f.name);await saveVault();renderAll()}
+};
+$('savePolicyBtn').onclick=async()=>{
+  const enabled=$('policyEnabled').checked,recipient=$('policyRecipient').value;
+  if(enabled&&!recipient)return toast('启用规则前请选择接收人');
+  vault.policy={enabled,value:Math.max(1,Number($('policyValue').value||1)),unit:$('policyUnit').value,recipientId:recipient,method:$('policyMethod').value};
+  audit('policy',enabled?`启用规则：连续 ${vault.policy.value}${vault.policy.unit==='days'?'天':'月'} 未登录后触发。`:'关闭长期未登录规则。');
+  await saveVault();renderAll();toast('触发规则已保存')
+};
+$('testTriggerBtn').onclick=async()=>{if(!vault.policy.recipientId)return toast('请先选择接收人并保存规则');await createDispatch('test','用户手动执行“立即测试触发”。');gotoPage('dispatch')};
+$('simulateSendBtn').onclick=async()=>{if(!vault.policy.recipientId)return toast('请先配置接收人');await createDispatch('test','用户在应急交付中心点击“模拟发送”。')};
+$('refreshPreviewBtn').onclick=()=>{renderDispatch();toast('文本预览已刷新')};
+$('copyPreviewBtn').onclick=async()=>{try{await navigator.clipboard.writeText(buildExportText());toast('已复制完整文本')}catch{toast('浏览器不允许直接复制，请手动选择文本')}};
+$('downloadPreviewBtn').onclick=()=>downloadText('数字保险箱_应急文本_'+new Date().toISOString().slice(0,10)+'.txt',buildExportText());
+$('exportBtn').onclick=()=>downloadText('数字保险箱_导出_'+new Date().toISOString().slice(0,10)+'.txt',buildExportText());
+
+initialize();
+</script>
+</body>
+</html>
