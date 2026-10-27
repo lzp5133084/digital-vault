@@ -1,0 +1,9 @@
+# 二进制文件在 Releases 中，不入 Git
+*.exe
+*.apk
+*.vaultbak
+*.db
+*.pkl
+node_modules/
+.DS_Store
+Thumbs.db
