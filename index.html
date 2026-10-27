@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>我的数字保险箱 · 下载中心</title>
+<meta name="description" content="家庭重要证件、保单、合同、房产资料的加密数字保管箱，一人保管全家共享。">
+<style>
+:root{
+  --bg:#1a1025;--bg-soft:#221536;--card:#2A273880;--card-hi:#35314599;
+  --border:#3D3A4D40;--border-hi:#F5C68B60;
+  --gold:#F5C68B;--gold-hi:#FFE4C4;--gold-grad:linear-gradient(135deg,#F5C68B 0%,#E8A0BF 50%,#C9A7EB 100%);
+  --text:#f3edfa;--muted:#a99bc0;
+  --cyan:#6fe0bd;--blue:#8ab4ff;--vio:#c9a7eb;
+  --ok:#9CCC65;--warn:#f5c68b;--danger:#ff8a65;
+  --shadow:0 22px 60px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{min-height:100%;font-family:"PingFang SC","Microsoft YaHei","HarmonyOS Sans SC",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:
+  radial-gradient(circle at 15% 0%,rgba(201,167,235,.12),transparent 32%),
+  radial-gradient(circle at 85% 8%,rgba(245,198,139,.10),transparent 28%),
+  radial-gradient(circle at 50% 100%,rgba(111,224,189,.06),transparent 40%),
+  linear-gradient(180deg,#120a1c 0%,#1a1025 45%,#150d20 100%);
+  color:var(--text);overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+
+/* 背景粒子 */
+.stars{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.stars i{position:absolute;width:2px;height:2px;border-radius:50%;background:rgba(255,255,255,.5);animation:twinkle 3s infinite ease-in-out}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+
+/* 导航 */
+.nav{position:sticky;top:0;z-index:20;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(18,12,28,.72);backdrop-filter:blur(18px);border-bottom:1px solid var(--border)}
+.nav .brand{display:flex;gap:12px;align-items:center}
+.nav .brand-ic{width:40px;height:40px;border-radius:14px;display:grid;place-items:center;font-size:22px;background:var(--gold-grad);box-shadow:0 6px 20px rgba(245,198,139,.3)}
+.nav .brand b{font-size:15px;letter-spacing:.5px}
+.nav .brand span{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.nav .links{display:flex;gap:16px}
+.nav .links a{font-size:13px;color:var(--muted);padding:6px 12px;border-radius:10px;transition:.2s}
+.nav .links a:hover{color:var(--gold);background:rgba(245,198,139,.08)}
+
+/* Hero */
+.hero{position:relative;z-index:1;padding:80px 28px 60px;text-align:center;max-width:1100px;margin:0 auto}
+.hero-badge{display:inline-flex;gap:8px;align-items:center;padding:7px 16px;border-radius:999px;border:1px solid var(--border-hi);background:rgba(245,198,139,.06);font-size:12px;color:var(--gold);margin-bottom:28px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--ok);box-shadow:0 0 10px var(--ok)}
+.hero h1{font-size:clamp(32px,5.5vw,56px);font-weight:800;line-height:1.15;background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:18px}
+.hero p{font-size:clamp(14px,1.6vw,17px);color:var(--muted);max-width:640px;margin:0 auto;line-height:1.9}
+.hero-stats{display:flex;justify-content:center;gap:36px;margin-top:36px;flex-wrap:wrap}
+.hero-stats .stat b{display:block;font-size:22px;color:var(--gold)}
+.hero-stats .stat span{font-size:11px;color:var(--muted);letter-spacing:1px}
+
+/* 下载卡片区 */
+.downloads{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 28px 80px}
+.section-title{text-align:center;margin-bottom:36px}
+.section-title h2{font-size:28px;margin-bottom:8px}
+.section-title p{color:var(--muted);font-size:13px}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px}
+.dl-card{position:relative;background:linear-gradient(180deg,rgba(42,39,56,.9),rgba(26,21,37,.9));border:1px solid var(--border);border-radius:22px;padding:28px;transition:.3s;overflow:hidden}
+.dl-card::before{content:"";position:absolute;inset:0;border-radius:22px;padding:1px;background:var(--gold-grad);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:.3s}
+.dl-card:hover::before{opacity:1}
+.dl-card:hover{transform:translateY(-4px);box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.dl-card .dl-ic{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font-size:28px;margin-bottom:18px}
+.dl-card.windows .dl-ic{background:linear-gradient(135deg,#0078d4,#00bcf2);box-shadow:0 8px 24px rgba(0,120,212,.3)}
+.dl-card.android .dl-ic{background:linear-gradient(135deg,#3ddc84,#27ae60);box-shadow:0 8px 24px rgba(61,220,132,.3)}
+.dl-card.web .dl-ic{background:var(--gold-grad);box-shadow:0 8px 24px rgba(245,198,139,.3)}
+.dl-card h3{font-size:18px;margin-bottom:6px}
+.dl-card .ver{display:inline-flex;gap:6px;align-items:center;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.06);font-size:11px;color:var(--muted);margin-bottom:14px}
+.dl-card .ver b{color:var(--gold);font-weight:600}
+.dl-card .meta{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-bottom:18px;flex-wrap:wrap}
+.dl-card .meta span{display:inline-flex;gap:4px;align-items:center}
+.dl-card .desc{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:22px}
+.dl-card .btn-row{display:flex;gap:10px}
+.btn{flex:1;height:46px;border-radius:12px;font-size:14px;font-weight:600;display:grid;place-items:center;transition:.2s}
+.btn-primary{background:var(--gold-grad);color:#1a1025;box-shadow:0 8px 24px rgba(245,198,139,.25)}
+.btn-primary:hover{box-shadow:0 12px 32px rgba(245,198,139,.4);transform:translateY(-2px)}
+.btn-secondary{background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--text)}
+.btn-secondary:hover{background:rgba(255,255,255,.1);border-color:var(--border-hi)}
+
+/* 功能特色 */
+.features{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:40px 28px 60px}
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.feat-item{padding:22px;border-radius:16px;background:rgba(255,255,255,.025);border:1px solid var(--border);transition:.2s}
+.feat-item:hover{border-color:var(--border-hi);background:rgba(245,198,139,.04)}
+.feat-item .f-ic{font-size:24px;margin-bottom:12px}
+.feat-item b{display:block;font-size:14px;margin-bottom:6px}
+.feat-item p{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* 使用说明 */
+.guide{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:20px 28px 60px}
+.guide-card{background:linear-gradient(180deg,rgba(42,39,56,.6),rgba(26,21,37,.6));border:1px solid var(--border);border-radius:20px;padding:32px}
+.guide-card h3{font-size:18px;margin-bottom:18px;color:var(--gold)}
+.guide-steps{display:grid;gap:14px}
+.guide-step{display:flex;gap:14px;align-items:flex-start;padding:14px;border-radius:14px;background:rgba(255,255,255,.03);border:1px solid var(--border)}
+.guide-step .num{flex-shrink:0;width:32px;height:32px;border-radius:10px;background:var(--gold-grad);color:#1a1025;font-weight:700;display:grid;place-items:center;font-size:14px}
+.guide-step b{display:block;font-size:14px;margin-bottom:4px}
+.guide-step p{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* 页脚 */
+.footer{position:relative;z-index:1;text-align:center;padding:40px 28px;border-top:1px solid var(--border);margin-top:40px}
+.footer .info{display:flex;justify-content:center;gap:20px;flex-wrap:wrap;font-size:11px;color:var(--muted);margin-bottom:14px}
+.footer .info span{display:inline-flex;gap:4px;align-items:center}
+.footer .copy{font-size:11px;color:var(--muted)}
+.footer .copy b{color:var(--gold)}
+
+/* 响应式 */
+@media(max-width:760px){
+  .nav{padding:0 16px}
+  .nav .links{display:none}
+  .hero{padding:50px 16px 40px}
+  .downloads,.features,.guide{padding:0 16px 40px}
+  .card-grid{grid-template-columns:1fr}
+  .hero-stats{gap:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+
+<nav class="nav">
+  <div class="brand">
+    <div class="brand-ic">🔐</div>
+    <div>
+      <b>我的数字保险箱</b>
+      <span>Digital Vault · 家庭加密管家</span>
+    </div>
+  </div>
+  <div class="links">
+    <a href="#downloads">下载</a>
+    <a href="#features">特色</a>
+    <a href="#guide">说明</a>
+    <a href="https://github.com/lzp5133084/digital-vault" target="_blank">源码 ↗</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> V2.9 商用版 · 已发布</div>
+  <h1>把重要数字资产<br>安放在加密保险箱</h1>
+  <p>家庭重要证件、保单、合同、房产资料、密码账号——一人保管，全家共享。<br>支持电脑端、手机端、网页三端同步，数据本地加密，安全可靠。</p>
+  <div class="hero-stats">
+    <div class="stat"><b>3</b><span>端支持</span></div>
+    <div class="stat"><b>V2.9</b><span>最新版本</span></div>
+    <div class="stat"><b>AES-GCM</b><span>加密引擎</span></div>
+    <div class="stat"><b>本地优先</b><span>隐私安全</span></div>
+  </div>
+</section>
+
+<section class="downloads" id="downloads">
+  <div class="section-title">
+    <h2>选择适合你的版本</h2>
+    <p>三端互通 · 数据可导入导出 · 版本持续迭代</p>
+  </div>
+  <div class="card-grid">
+    <div class="dl-card windows">
+      <div class="dl-ic">🪟</div>
+      <h3>电脑端（Windows）</h3>
+      <div class="ver"><span>版本</span><b>V2.9</b></div>
+      <div class="meta">
+        <span>📦 约 39 MB</span>
+        <span>🗓 2026-10-27</span>
+        <span>⚙ Windows 10/11</span>
+      </div>
+      <div class="desc">PC 桌面完整客户端，功能最全的主力版本。支持文件夹加密、快速检索、家庭共享管理、应急交付触发。</div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/lzp5133084/digital-vault/releases/download/v2.9/我的数字保险箱_电脑端V2.9.exe" target="_blank">⬇ 下载 EXE</a>
+      </div>
+    </div>
+
+    <div class="dl-card android">
+      <div class="dl-ic">📱</div>
+      <h3>手机端（Android）</h3>
+      <div class="ver"><span>版本</span><b>V2.9</b></div>
+      <div class="meta">
+        <span>📦 约 2 MB</span>
+        <span>🗓 2026-10-27</span>
+        <span>⚙ Android 8.0+</span>
+      </div>
+      <div class="desc">Android 原生 APK，随身查看保险箱内容。扫码快速导入、指纹/面容解锁、离线可查。</div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="https://github.com/lzp5133084/digital-vault/releases/download/v2.9/我的数字保险箱_手机端V2.9.apk" target="_blank">⬇ 下载 APK</a>
+      </div>
+    </div>
+
+    <div class="dl-card web">
+      <div class="dl-ic">🌐</div>
+      <h3>网页版（在线体验）</h3>
+      <div class="ver"><span>版本</span><b>Prototype</b></div>
+      <div class="meta">
+        <span>📦 单文件 HTML</span>
+        <span>🗓 2026-09-19</span>
+        <span>⚙ 浏览器直接打开</span>
+      </div>
+      <div class="desc">零安装即用的网页原型——密码管理、家庭授权、应急交付、审计日志，Web Crypto 加密本地存储。</div>
+      <div class="btn-row">
+        <a class="btn btn-primary" href="vault.html" target="_blank">🚀 在线使用</a>
+        <a class="btn btn-secondary" href="vault.html" download>⬇ 保存 HTML</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <div class="section-title">
+    <h2>核心特色</h2>
+    <p>为什么选择数字保险箱</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-item"><div class="f-ic">🔐</div><b>AES-GCM 端到端加密</b><p>主密码不存储，PBKDF2 派生密钥 + AES-GCM 加密保险箱内容。</p></div>
+    <div class="feat-item"><div class="f-ic">💾</div><b>本地优先架构</b><p>数据只在你自己的设备上，不上传服务器。隐私安全自主可控。</p></div>
+    <div class="feat-item"><div class="f-ic">👨‍👩‍👧</div><b>家庭授权共享</b><p>设置关联人与应急接收人，一人保管全家受益。</p></div>
+    <div class="feat-item"><div class="f-ic">⏱</div><b>长期未登录触发</b><p>设定期限未登录自动生成应急文本包，交付给指定家人。</p></div>
+    <div class="feat-item"><div class="f-ic">📱</div><b>三端同步</b><p>Windows 桌面 + Android 手机 + 网页版，数据可互相导入导出。</p></div>
+    <div class="feat-item"><div class="f-ic">📋</div><b>审计日志</b><p>每次解锁、查看、修改都有记录，操作全程可追溯。</p></div>
+  </div>
+</section>
+
+<section class="guide" id="guide">
+  <div class="guide-card">
+    <h3>🚀 快速上手</h3>
+    <div class="guide-steps">
+      <div class="guide-step"><div class="num">1</div><div><b>下载并安装</b><p>根据设备类型选择上方对应版本，电脑端双击 EXE 安装，手机端下载 APK 安装。</p></div></div>
+      <div class="guide-step"><div class="num">2</div><div><b>设置主密码</b><p>首次启动请设置至少 6 位主密码（务必牢记，丢失无法找回）。</p></div></div>
+      <div class="guide-step"><div class="num">3</div><div><b>录入资产</b><p>把证件、保单、合同、密码等信息逐一录入，系统自动加密保管。</p></div></div>
+      <div class="guide-step"><div class="num">4</div><div><b>配置应急</b><p>在「长期未登录触发」里设置家人联系方式和触发期限，完成最后一道防线。</p></div></div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="info">
+    <span>📐 大小：网页版 46 KB · 电脑端 39 MB · 手机端 2 MB</span>
+    <span>🕐 最后更新：2026-10-27</span>
+    <span>👤 作者：<b>军哥懂保</b></span>
+    <span>💬 微信：<b>xunijiayuan</b></span>
+  </div>
+  <div class="copy">
+    我的数字保险箱 · Digital Vault V2.9 · &copy; 2026 <b>军哥懂保</b><br>
+    <a href="https://ecojia.cn" target="_blank" style="color:var(--gold);opacity:.8">数字生态家园 ecojia.cn ↗</a>
+  </div>
+</footer>
+
+<script>
+// 生成背景星星
+(function(){
+  var s=document.getElementById('stars');
+  for(var i=0;i<60;i++){
+    var el=document.createElement('i');
+    el.style.left=Math.random()*100+'%';
+    el.style.top=Math.random()*100+'%';
+    el.style.animationDelay=(Math.random()*3)+'s';
+    el.style.animationDuration=(2+Math.random()*3)+'s';
+    s.appendChild(el);
+  }
+})();
+</script>
+
+</body>
+</html>
