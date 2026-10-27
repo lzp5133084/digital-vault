@@ -8,8 +8,8 @@
 
 | 平台 | 版本 | 大小 | 下载 |
 |------|------|------|------|
-| Windows 电脑端 | V2.9 | ~39 MB | [EXE](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/我的数字保险箱_电脑端V2.9.exe) |
-| Android 手机端 | V2.9 | ~2 MB | [APK](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/我的数字保险箱_手机端V2.9.apk) |
+| Windows 电脑端 | V2.9 | ~39 MB | [EXE](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-win-v2.9.exe) |
+| Android 手机端 | V2.9 | ~2 MB | [APK](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-android-v2.9.apk) |
 | 网页版（在线体验） | Prototype | 46 KB | [在线使用](https://lzp5133084.github.io/digital-vault/vault.html) |
 
 ## 特色
