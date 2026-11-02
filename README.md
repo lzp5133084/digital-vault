@@ -1,4 +1,4 @@
-# 我的数字保险箱 · Digital Vault V2.9
+# 我的数字保险箱 · Digital Vault V2.9.1
 
 家庭重要证件、保单、合同、房产资料的加密数字保管箱，一人保管全家共享。
 
@@ -9,8 +9,8 @@
 | 平台 | 版本 | 大小 | 下载 |
 |------|------|------|------|
 | Windows 电脑端 | V2.9 | ~39 MB | [EXE](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-win-v2.9.exe) |
-| Android 手机端 | V2.9 | ~2 MB | [APK](https://github.com/lzp5133084/digital-vault/releases/download/v2.9/digital-vault-android-v2.9.apk) |
-| 网页版（在线体验） | Prototype | 46 KB | [在线使用](https://lzp5133084.github.io/digital-vault/vault.html) |
+| Android 手机端 | V2.9.1 | ~2 MB | [APK](https://tools.ecojia.cn/digital-vault/digital-vault-android-v2.9.1.apk) |
+| 网页版（在线体验） | v2026.11.02 | 59 KB | [在线使用](https://tools.ecojia.cn/digital-vault/vault.html) |
 
 ## 特色
 
@@ -18,7 +18,8 @@
 - 💾 **本地优先架构** — 数据只在你自己的设备上，隐私安全自主可控
 - 👨‍👩‍👧 **家庭授权共享** — 设置关联人与应急接收人
 - ⏱ **长期未登录触发** — 设定期限未登录自动生成应急文本包交付家人
-- 📱 **三端支持** — Windows 桌面 + Android 手机 + 网页版
+- 📱 **三端支持** — Windows 桌面 + Android 手机 + 网页版（手机端独立底部导航）
+- 🗂 **加密备份迁移** — 网页版可导出 .dvault 密文备份，换设备用原主密码恢复
 - 📋 **完整审计日志** — 操作全程可追溯
 
 ## 安全说明
