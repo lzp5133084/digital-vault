@@ -138,7 +138,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
 <section class="hero">
   <div class="hero-badge"><span class="dot"></span> V2.9.1 商用版 · 已发布</div>
   <h1>把重要数字资产<br>安放在加密保险箱</h1>
-  <p>家庭重要证件、保单、合同、房产资料、密码账号——一人保管，全家共享。<br>支持电脑端、手机端、网页三端，数据本地加密；网页版可导出加密备份，换设备输入原主密码即可恢复。</p>
+  <p>家庭重要证件、保单、合同、房产资料、密码账号——一人保管，全家共享。<br>三端可用，网页版已支持<b>端到端加密云同步</b>：手机、电脑、平板输入同一手机号 + 主密码即可读取同一份数据。</p>
   <div class="hero-stats">
     <div class="stat"><b>3</b><span>端支持</span></div>
     <div class="stat"><b>V2.9.1</b><span>最新版本</span></div>
@@ -194,11 +194,11 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
       <h3>网页版（在线体验）</h3>
       <div class="ver"><span>版本</span><b>v2026.11.02</b></div>
       <div class="meta">
-        <span>📦 单文件 约 59 KB</span>
+        <span>📦 单文件 约 74 KB</span>
         <span>🗓 2026-11-02</span>
         <span>⚙ 电脑 / 手机 / 平板浏览器</span>
       </div>
-      <div class="desc">零安装即用：密码管理、家庭授权、应急交付、审计日志、加密备份导入导出；手机端自动切换底部导航，三端同一套功能按键。</div>
+      <div class="desc">零安装即用：密码管理、家庭授权、应急交付、审计日志、加密备份，并支持端到端加密云同步；手机端自动切换底部导航，三端同一套功能按键。</div>
       <div class="btn-row">
         <a class="btn btn-primary" href="vault.html" target="_blank">🚀 在线使用</a>
         <a class="btn btn-secondary" href="vault.html" download>⬇ 保存 HTML</a>
@@ -214,10 +214,10 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
   </div>
   <div class="feat-grid">
     <div class="feat-item"><div class="f-ic">🔐</div><b>AES-GCM 端到端加密</b><p>主密码不存储，PBKDF2 派生密钥 + AES-GCM 加密保险箱内容。</p></div>
-    <div class="feat-item"><div class="f-ic">💾</div><b>本地优先架构</b><p>数据只在你自己的设备上，不上传服务器。隐私安全自主可控。</p></div>
+    <div class="feat-item"><div class="f-ic">💾</div><b>本地优先 · 可选云同步</b><p>默认只存本机；开启云同步后也只上传密文，服务器无法还原明文。</p></div>
     <div class="feat-item"><div class="f-ic">👨‍👩‍👧</div><b>家庭授权共享</b><p>设置关联人与应急接收人，一人保管全家受益。</p></div>
     <div class="feat-item"><div class="f-ic">⏱</div><b>长期未登录触发</b><p>设定期限未登录自动生成应急文本包，交付给指定家人。</p></div>
-    <div class="feat-item"><div class="f-ic">📱</div><b>三端可用 · 备份互通</b><p>Windows 桌面 + Android 手机 + 网页版；网页版可导出 AES-GCM 加密备份（.dvault），换设备输入原主密码即可恢复。</p></div>
+    <div class="feat-item"><div class="f-ic">☁️</div><b>端到端加密云同步</b><p>PBKDF2 派生双密钥 + AES-256-GCM；服务器只存密文与校验值，拿不到主密码，也解不出明文。冲突由你决定保留哪一份。</p></div>
     <div class="feat-item"><div class="f-ic">📋</div><b>审计日志</b><p>每次解锁、查看、修改都有记录，操作全程可追溯。</p></div>
   </div>
 </section>
@@ -230,7 +230,7 @@ button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
       <div class="guide-step"><div class="num">2</div><div><b>设置主密码</b><p>首次启动请设置至少 6 位主密码（务必牢记，丢失无法找回）。网页版建议至少 8 位。</p></div></div>
       <div class="guide-step"><div class="num">3</div><div><b>录入资产</b><p>把证件、保单、合同、密码等信息逐一录入，系统自动加密保管。手机浏览器同样可录入。</p></div></div>
       <div class="guide-step"><div class="num">4</div><div><b>配置应急</b><p>在「长期未登录触发」里设置家人联系方式和触发期限，完成最后一道防线。</p></div></div>
-      <div class="guide-step"><div class="num">5</div><div><b>换设备迁移</b><p>在网页版「安全与记录」导出加密备份（.dvault），在新设备网页导入并用原主密码解锁即可恢复全部数据。</p></div></div>
+      <div class="guide-step"><div class="num">5</div><div><b>多设备同步</b><p>网页版「云同步」输入手机号 + 主密码即可开启；另一台设备登录同一账号，选择「用云端覆盖本机」即可自动恢复全部数据。</p></div></div>
     </div>
   </div>
 </section>

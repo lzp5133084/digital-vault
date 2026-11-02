@@ -251,12 +251,13 @@ button{cursor:pointer}
       <button data-page="policy">◷ 未登录触发 <small>RULE</small></button>
       <button data-page="dispatch">⇢ 应急交付 <small>SEND</small></button>
       <button data-page="security">◇ 安全与记录 <small>LOG</small></button>
+      <button data-page="sync">☁ 云同步 <small>SYNC</small></button>
     </div>
     <div class="sideFoot">
       <b>当前运行方式</b>
       <p>单文件 HTML · LocalStorage 本机保存 · Web Crypto 加密（浏览器支持时）</p>
       <span class="badge warn" id="cryptoBadge">检测中</span>
-      <p style="margin-top:9px">作者：军哥懂保 · 微信 xunijiayuan<br>版本 v2026.11.02 · 单文件约 58 KB</p>
+      <p style="margin-top:9px">作者：军哥懂保 · 微信 xunijiayuan<br>版本 v2026.11.02 · 单文件约 74 KB</p>
     </div>
   </aside>
 
@@ -378,9 +379,51 @@ button{cursor:pointer}
         <div class="sectionTitle"><h3>审计日志</h3><span>最近 50 条</span></div>
         <div class="card"><div class="audit" id="fullAudit"></div></div>
       </section>
+
+      <section class="page" id="page-sync">
+        <div class="sectionTitle"><h3>云同步中心</h3><span>端到端加密 · 服务器只见密文</span></div>
+        <div class="card">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+            <span class="badge" id="syncBadge">未开启</span>
+            <span class="small muted" id="syncMetaText">尚未连接云端，数据仅保存在本机浏览器</span>
+          </div>
+          <p class="muted small" style="margin:10px 0 0;line-height:1.75">开启后每次保存都会在 3 秒内把<b>加密后的密文</b>上传；在另一台设备输入同一手机号 + 主密码即可拉取并解密。服务器只保存密文与校验值，拿不到主密码，也还原不出明文。</p>
+        </div>
+        <div class="sectionTitle"><h3>开通 / 登录</h3><span>首次使用即创建云端保险箱</span></div>
+        <div class="card">
+          <div class="formGrid">
+            <div class="field"><label>手机号</label><input class="input" id="syncPhone" inputmode="numeric" maxlength="15" placeholder="用于识别你的云端保险箱"></div>
+            <div class="field"><label>主密码</label><input class="input" id="syncPass" type="password" placeholder="与解锁本机所用主密码一致"></div>
+          </div>
+          <div class="btnRow" style="margin-top:12px">
+            <button class="btn" id="syncConnectBtn">开启 / 登录云同步</button>
+            <button class="btn secondary" id="syncPushBtn">立即上传本机</button>
+            <button class="btn secondary" id="syncPullBtn">立即拉取云端</button>
+            <button class="btn ghost" id="syncLogoutBtn">断开同步</button>
+          </div>
+          <p class="muted small" style="margin:12px 0 0;line-height:1.7">同一手机号已有云端数据时，登录后会询问「用云端覆盖本机」还是「用本机覆盖云端」，不会静默覆盖任何一方。</p>
+        </div>
+        <div class="sectionTitle"><h3>加密协议说明</h3><span>给技术同学</span></div>
+        <div class="card">
+          <p class="muted small" style="margin:0;line-height:1.95">
+            · 密钥派生：PBKDF2-SHA256（210000 次），用两把随机盐分别派生「认证密钥」与「加密密钥」。<br>
+            · 认证：SHA-256(认证密钥 + 域分隔串) 作为校验值上传，服务器只比对校验值，不知道主密码。<br>
+            · 加密：AES-256-GCM，随机 12 字节 IV；密文仅在本机解密。<br>
+            · 同步：服务端存版本号，客户端带 baseVersion 上传，冲突时由你决定保留哪一份。
+          </p>
+        </div>
+      </section>
     </div>
   </main>
   <nav class="tabbar" id="tabbar" aria-label="功能导航"></nav>
+</div>
+
+<div class="modalBack hidden" id="confirmModal">
+  <div class="modal" style="max-width:430px">
+    <div class="modalHead"><h3 id="confirmTitle">请确认</h3></div>
+    <p id="confirmMsg" class="muted small" style="white-space:pre-line;line-height:1.8;margin:0 0 16px"></p>
+    <div class="btnRow"><button class="btn" id="confirmOk">确定</button><button class="btn ghost" id="confirmCancel">取消</button></div>
+  </div>
 </div>
 
 <div class="modalBack hidden" id="passwordModal">
@@ -480,6 +523,8 @@ async function saveVault(passwordOverride=null){
   }else{
     localStorage.setItem(DATA_KEY,JSON.stringify({mode:'plain',payload:btoa(unescape(encodeURIComponent(JSON.stringify(vault))))}));
   }
+
+  schedulePush();
 }
 
 function freshVault(){
@@ -523,6 +568,7 @@ async function initialize(){
 async function createVault(password,data=freshVault()){
   if(password.length<6){toast('主密码至少 6 位');return false}
   vault=data;audit('security','创建本机保险箱。');
+  currentPassword=password;
   const meta={createdAt:nowISO(),lastLoginAt:nowISO(),salt:null};
   setMeta(meta);
   await saveVault(password);
@@ -539,6 +585,7 @@ async function enterApp(){
   await maybeTriggerFromInactivity(previousLast);
   await saveVault();
   renderAll();
+  if(currentPassword){setTimeout(()=>{syncOnUnlock(currentPassword)},0)}
 }
 async function maybeTriggerFromInactivity(previousLast){
   if(!vault.policy.enabled||!previousLast)return;
@@ -608,7 +655,7 @@ async function createDispatch(kind,note){
 }
 
 function renderAll(){
-  renderDashboard();renderPasswords();renderFamily();renderPolicy();renderDispatch();renderAudit();
+  renderDashboard();renderPasswords();renderFamily();renderPolicy();renderDispatch();renderAudit();renderSync();
 }
 function renderDashboard(){
   $('statPasswords').textContent=vault.passwords.length;
@@ -707,8 +754,9 @@ function gotoPage(name){
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   $('page-'+name).classList.add('active');document.querySelector(`.nav button[data-page="${name}"]`)?.classList.add('active');
   document.querySelectorAll('.tabbar button').forEach(x=>x.classList.toggle('active',x.dataset.page===name));
-  const titles={dashboard:['保险箱总览','掌握当前安全状态与应急规则'],passwords:['密码管理','维护所有数字账号与重要凭据'],family:['家庭授权','管理应急关联人与接收对象'],policy:['长期未登录触发','配置自动交付规则'],dispatch:['应急交付中心','预览与模拟发送完整文本包'],security:['安全与记录','本地保护能力与审计日志']};
-  $('topTitle').textContent=titles[name][0];$('topSub').textContent=titles[name][1];
+  const titles={dashboard:['保险箱总览','掌握当前安全状态与应急规则'],passwords:['密码管理','维护所有数字账号与重要凭据'],family:['家庭授权','管理应急关联人与接收对象'],policy:['长期未登录触发','配置自动交付规则'],dispatch:['应急交付中心','预览与模拟发送完整文本包'],security:['安全与记录','本地保护能力与审计日志'],sync:['云同步中心','端到端加密，服务器只见密文']};
+  const t=titles[name]||[name,''];
+  $('topTitle').textContent=t[0];$('topSub').textContent=t[1];
 }
 
 $('createVaultBtn').onclick=async()=>{const p=$('setupPass').value,p2=$('setupPass2').value;if(p!==p2)return toast('两次主密码不一致');await createVault(p)};
@@ -716,10 +764,11 @@ $('demoBtn').onclick=async()=>{await createVault('123456',demoVault());toast('�
 $('unlockBtn').onclick=async()=>{
   try{
     const rec=JSON.parse(localStorage.getItem(DATA_KEY));vault=await decryptData(rec,$('unlockPass').value);
+    currentPassword=$('unlockPass').value;
     await enterApp();
   }catch(e){toast('主密码错误，或保险箱数据无法解密')}
 };
-$('lockBtn').onclick=()=>{vault=null;masterKey=null;$('app').classList.add('hidden');$('lockScreen').classList.remove('hidden');$('setupPane').classList.add('hidden');$('unlockPane').classList.remove('hidden');$('unlockPass').value=''};
+$('lockBtn').onclick=()=>{vault=null;masterKey=null;cloudKey=null;currentPassword=null;$('app').classList.add('hidden');$('lockScreen').classList.remove('hidden');$('setupPane').classList.add('hidden');$('unlockPane').classList.remove('hidden');$('unlockPass').value=''};
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>gotoPage(b.dataset.page));
 $('addPasswordBtn').onclick=()=>openPassword();
 $('addFamilyBtn').onclick=()=>openFamily();
@@ -778,11 +827,11 @@ $('importBtn').onclick=()=>$('importFile').click();
 $('importFile').onchange=e=>{
   const f=e.target.files&&e.target.files[0];if(!f)return;
   const rd=new FileReader();
-  rd.onload=()=>{
+  rd.onload=async()=>{
     try{
       const pack=JSON.parse(String(rd.result));
       if(pack.app!=='digital-vault'||!pack.record||!pack.record.mode)throw new Error('bad');
-      if(getMeta()&&!confirm('当前设备已有保险箱，导入会覆盖本机数据，确定继续吗？'))return;
+      if(getMeta()&&!await askConfirm('当前设备已有保险箱，导入会覆盖本机数据，确定继续吗？','覆盖导入','取消'))return;
       localStorage.setItem(DATA_KEY,JSON.stringify(pack.record));
       setMeta({createdAt:(pack.meta&&pack.meta.createdAt)||nowISO(),lastLoginAt:nowISO(),salt:pack.record.salt||(pack.meta&&pack.meta.salt)||null});
       vault=null;masterKey=null;
@@ -800,8 +849,8 @@ $('importFile').onchange=e=>{
 /* ═══ 手机端底部导航：与左侧导航同源生成 ═══ */
 (function(){
   const bar=$('tabbar');if(!bar)return;
-  const icons={dashboard:'◈',passwords:'⌁',family:'◎',policy:'◷',dispatch:'⇢',security:'◇'};
-  const labels={dashboard:'总览',passwords:'密码',family:'家庭',policy:'触发',dispatch:'交付',security:'安全'};
+  const icons={dashboard:'◈',passwords:'⌁',family:'◎',policy:'◷',dispatch:'⇢',security:'◇',sync:'☁'};
+  const labels={dashboard:'总览',passwords:'密码',family:'家庭',policy:'触发',dispatch:'交付',security:'安全',sync:'同步'};
   document.querySelectorAll('.nav button').forEach(n=>{
     const b=document.createElement('button');
     b.dataset.page=n.dataset.page;
@@ -811,6 +860,197 @@ $('importFile').onchange=e=>{
     bar.appendChild(b);
   });
 })();
+
+/* ═══════════ 云同步：端到端加密数据层 ═══════════ */
+const SYNC_KEY='opc_sync_v1';
+const API_BASE='/digital-vault/api/v1';
+let syncCfg=Object.assign({enabled:false,phone:'',token:'',saltAuth:'',saltEnc:'',baseVersion:0,lastSyncAt:0},
+  JSON.parse(localStorage.getItem(SYNC_KEY)||'null')||{});
+let cloudKey=null,pushTimer=null,syncing=false,currentPassword=null,cloudKeyPwd=null,cloudVerified=false;
+function saveSyncCfg(){localStorage.setItem(SYNC_KEY,JSON.stringify(syncCfg))}
+function hexBytes(h){const a=new Uint8Array(h.length/2);for(let i=0;i<a.length;i++)a[i]=parseInt(h.substr(i*2,2),16);return a}
+function bytesHex(b){return Array.from(b).map(x=>x.toString(16).padStart(2,'0')).join('')}
+async function pbkdf2Bits(pwd,saltHex,iters=210000){
+  const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pwd),'PBKDF2',false,['deriveBits']);
+  const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:hexBytes(saltHex),iterations:iters,hash:'SHA-256'},base,256);
+  return new Uint8Array(bits);
+}
+async function deriveAuth(pwd,saltHex){
+  const bits=await pbkdf2Bits(pwd,saltHex);
+  const d=await crypto.subtle.digest('SHA-256',new Uint8Array([...bits,...new TextEncoder().encode('dv-auth-v1')]));
+  return bytesHex(new Uint8Array(d));
+}
+async function deriveCloudKey(pwd,saltHex){
+  return crypto.subtle.importKey('raw',await pbkdf2Bits(pwd,saltHex),{name:'AES-GCM'},false,['encrypt','decrypt']);
+}
+async function setCloudKey(pwd,saltHex){
+  cloudKey=await deriveCloudKey(pwd,saltHex);cloudKeyPwd=pwd;
+}
+async function canDecryptCloud(blob){
+  try{await cloudDecrypt(blob);return true}catch(e){return false}
+}
+async function cloudEncrypt(obj){
+  const iv=crypto.getRandomValues(new Uint8Array(12));
+  const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},cloudKey,new TextEncoder().encode(JSON.stringify(obj)));
+  return JSON.stringify({v:1,iv:b64(iv),ct:b64(ct)});
+}
+async function cloudDecrypt(blob){
+  const o=JSON.parse(blob);
+  const buf=await crypto.subtle.decrypt({name:'AES-GCM',iv:unb64(o.iv)},cloudKey,unb64(o.ct));
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+async function api(path,method='GET',payload=null){
+  const opt={method,headers:{'Content-Type':'application/json'}};
+  if(syncCfg.token)opt.headers.Authorization='Bearer '+syncCfg.token;
+  if(payload)opt.body=JSON.stringify(payload);
+  const res=await fetch(API_BASE+path,opt);
+  let data={};try{data=await res.json()}catch(e){}
+  return {status:res.status,data};
+}
+function maskPhone(p){return p?p.slice(0,3)+'****'+p.slice(-4):''}
+function askConfirm(msg,okText='确定',cancelText='取消'){
+  return new Promise(res=>{
+    $('confirmMsg').textContent=msg;
+    $('confirmOk').textContent=okText;$('confirmCancel').textContent=cancelText;
+    $('confirmModal').classList.remove('hidden');
+    const done=v=>{$('confirmModal').classList.add('hidden');$('confirmOk').onclick=null;$('confirmCancel').onclick=null;res(v)};
+    $('confirmOk').onclick=()=>done(true);
+    $('confirmCancel').onclick=()=>done(false);
+  });
+}
+function renderSync(){
+  const badge=$('syncBadge');if(!badge)return;
+  if(syncCfg.enabled&&syncCfg.token){
+    badge.textContent='已连接 · '+maskPhone(syncCfg.phone);badge.className='badge ok';
+    $('syncMetaText').textContent='云端版本 v'+syncCfg.baseVersion+' · 最近同步 '+(syncCfg.lastSyncAt?fmt(new Date(syncCfg.lastSyncAt).toISOString()):'—');
+    $('syncPhone').value=syncCfg.phone;
+    $('syncConnectBtn').textContent='重新登录云同步';
+  }else{
+    badge.textContent='未开启';badge.className='badge warn';
+    $('syncMetaText').textContent='尚未连接云端，数据仅保存在本机浏览器';
+    $('syncConnectBtn').textContent='开启 / 登录云同步';
+  }
+}
+async function pushNow(silent=false){
+  if(!syncCfg.enabled||!syncCfg.token||!cloudKey){if(!silent)toast('请先开启云同步');return false}
+  if(!vault)return false;
+  if(!cloudVerified&&syncCfg.baseVersion>0){
+    if(!await askConfirm('主密码与云端既有数据不匹配，上传会覆盖云端内容，其他设备将无法解密。确定继续上传？','仍然上传','取消'))return false;
+  }
+  const blob=await cloudEncrypt(vault);
+  const r=await api('/vault','PUT',{blob,baseVersion:syncCfg.baseVersion});
+  if(r.status===409&&r.data.conflict){
+    const useCloud=await askConfirm('云端有更新的版本。\n\n确定：用云端覆盖本机\n取消：保留本机并覆盖云端','用云端覆盖本机','保留本机');
+    if(useCloud){await pullCloud(true);return true}
+    syncCfg.baseVersion=r.data.server.version;saveSyncCfg();
+    return pushNow(silent);
+  }
+  if(r.data&&r.data.ok){
+    syncCfg.baseVersion=r.data.version;syncCfg.lastSyncAt=Date.now();saveSyncCfg();renderSync();
+    if(!silent)toast('已上传到云端 · v'+r.data.version);
+    return true;
+  }
+  if(!silent)toast(r.data.error||'上传失败');
+  return false;
+}
+async function pullCloud(silent=false){
+  if(!syncCfg.enabled||!syncCfg.token||!cloudKey){if(!silent)toast('请先开启云同步');return false}
+  const r=await api('/vault');
+  if(!r.data.ok){if(!silent)toast(r.data.error||'拉取失败');return false}
+  if(!r.data.blob){if(!silent)toast('云端暂无数据');return false}
+  try{
+    const cloud=await cloudDecrypt(r.data.blob);
+    cloudVerified=true;syncCfg.lastDecryptAt=Date.now();
+    syncing=true;
+    vault=cloud;
+    await saveVault();
+    syncCfg.baseVersion=r.data.version;syncCfg.lastSyncAt=Date.now();saveSyncCfg();
+    renderAll();renderSync();
+    if(!silent)toast('已从云端恢复 · v'+r.data.version);
+    return true;
+  }catch(e){
+    if(!silent)toast('无法解密：主密码与云端密文不匹配');
+    return false;
+  }finally{syncing=false}
+}
+function schedulePush(){
+  if(!syncCfg.enabled||!cloudKey||!cloudVerified||syncing)return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>{pushNow(true).catch(()=>{})},3000);
+}
+async function connectSync(){
+  const phone=$('syncPhone').value.trim(),pass=$('syncPass').value;
+  if(!/^1\d{10}$/.test(phone))return toast('请输入 11 位手机号');
+  if(!pass||pass.length<6)return toast('请输入主密码（至少 6 位）');
+  if(!canCrypto())return toast('当前浏览器不支持 Web Crypto，无法使用云同步');
+  if(!vault)return toast('请先解锁保险箱');
+  const btn=$('syncConnectBtn');btn.disabled=true;btn.textContent='连接中…';
+  try{
+    let saltAuth,saltEnc;
+    const s=await api('/salts?phone='+encodeURIComponent(phone));
+    if(!s.data.ok)throw new Error(s.data.error||'查询账号失败');
+    if(s.data.exists){
+      saltAuth=s.data.saltAuth;saltEnc=s.data.saltEnc;
+      const verifier=await deriveAuth(pass,saltAuth);
+      const r=await api('/login','POST',{phone,authVerifier:verifier});
+      if(!r.data.ok)throw new Error(r.data.error||'登录失败');
+      syncCfg={enabled:true,phone,token:r.data.token,saltAuth,saltEnc,baseVersion:r.data.version,lastSyncAt:0};
+      saveSyncCfg();
+      cloudKey=null;
+      await setCloudKey(pass,saltEnc);
+      cloudVerified=r.data.blob?await canDecryptCloud(r.data.blob):true;
+      if(r.data.blob){
+        const useCloud=await askConfirm('该手机号已有云端保险箱。\n\n确定：用云端数据覆盖本机\n取消：用本机数据覆盖云端','用云端覆盖本机','用本机覆盖云端');
+        if(useCloud){await pullCloud(true)}
+        else{
+          if(!cloudVerified&&!await askConfirm('主密码与云端数据不匹配：用本机覆盖后，其他设备将无法再解密云端数据。确定吗？','仍然覆盖','取消')){toast('已取消，云端与本机均未改动');return}
+          await pushNow(true);
+        }
+      }else{await pushNow(true)}
+      syncCfg.lastSyncAt=Date.now();saveSyncCfg();
+      toast('云同步已连接');
+    }else{
+      saltAuth=bytesHex(crypto.getRandomValues(new Uint8Array(16)));
+      saltEnc=bytesHex(crypto.getRandomValues(new Uint8Array(16)));
+      const verifier=await deriveAuth(pass,saltAuth);
+      const r=await api('/register','POST',{phone,authVerifier:verifier,saltAuth,saltEnc});
+      if(!r.data.ok)throw new Error(r.data.error||'开通失败');
+      syncCfg={enabled:true,phone,token:r.data.token,saltAuth,saltEnc,baseVersion:r.data.version,lastSyncAt:0};
+      saveSyncCfg();
+      await setCloudKey(pass,saltEnc);
+      cloudVerified=true;
+      await pushNow(true);
+      syncCfg.lastSyncAt=Date.now();saveSyncCfg();
+      toast('已开通云同步，密文已上传');
+    }
+    $('syncPass').value='';
+    renderSync();
+  }catch(e){toast('连接失败：'+e.message)}
+  finally{btn.disabled=false;renderSync()}
+}
+async function syncOnUnlock(password){
+  if(!(syncCfg.enabled&&syncCfg.token&&canCrypto()&&syncCfg.saltEnc)){renderSync();return}
+  try{
+    const me=await api('/me');
+    if(me.status===401){syncCfg.enabled=false;syncCfg.token='';saveSyncCfg();renderSync();toast('云同步登录已失效，请到「云同步」重新登录');return}
+    await setCloudKey(password,syncCfg.saltEnc);
+    const v=await api('/vault');
+    cloudVerified=!v.data.blob||await canDecryptCloud(v.data.blob);
+    if(!cloudVerified)toast('主密码与云端密文不匹配，已暂停自动上传');
+    if(v.data.ok&&v.data.version>syncCfg.baseVersion&&v.data.blob){
+      $('syncMetaText').textContent='云端有新版本 v'+v.data.version+'，建议到「立即拉取云端」同步';
+      toast('云端有更新版本，可在「云同步」页拉取');
+    }
+  }catch(e){/* 静默失败，不影响本地使用 */}
+  renderSync();
+}
+$('syncConnectBtn').onclick=connectSync;
+$('syncPushBtn').onclick=()=>pushNow();
+$('syncPullBtn').onclick=async()=>{if(await askConfirm('拉取会覆盖本机数据，确定继续？','覆盖并拉取','取消'))await pullCloud()};
+$('syncLogoutBtn').onclick=()=>{
+  syncCfg={enabled:false,phone:'',token:'',saltAuth:'',saltEnc:'',baseVersion:0,lastSyncAt:0};
+  cloudKey=null;saveSyncCfg();renderSync();toast('已断开云同步（云端密文仍保留）');
+};
 
 /* ═══ 左侧轮播控制 ═══ */
 (function(){
